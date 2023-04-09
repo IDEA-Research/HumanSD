@@ -150,3 +150,9 @@ p code {
 .spacertd {
   width: 40px;
 }
+.center{
+  margin: 0 auto;
+  width: 60%;
+  display: block;
+  text-align: center;
+ }
