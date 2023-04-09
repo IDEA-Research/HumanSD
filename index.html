@@ -1,0 +1,175 @@
+
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Composer: Creative and Controllable Image Synthesis with Composable Conditions</title>
+    <link href="./style.css" rel="stylesheet">
+  </head>
+
+  <body>
+      <div class="content">
+        <h1><strong>
+          Composer: Creative and Controllable Image Synthesis with Composable Conditions
+        </strong></h1>
+        <p id="authors">
+          <span><a href=""></a></span>
+          <a href="" style="pointer-events: none; text-decoration:none; color: black;">Lianghua Huang</a><sup style="margin-left: -7px;">1</sup>
+          <a href="" style="pointer-events: none; text-decoration:none; color: black;">Di Chen</a><sup style="margin-left: -7px;">1</sup>
+          <a href="" style="pointer-events: none; text-decoration:none; color: black;">Yu Liu</a><sup style="margin-left: -7px;">1</sup>
+          <a href="" style="pointer-events: none; text-decoration:none; color: black;">Yujun Shen</a><sup style="margin-left: -7px;">2</sup>
+          <a href="" style="pointer-events: none; text-decoration:none; color: black;">Deli Zhao</a><sup style="margin-left: -7px;">1</sup>
+          <a href="" style="pointer-events: none; text-decoration:none; color: black;">Jingren Zhou</a><sup style="margin-left: -7px;">1</sup>
+          <br><br>
+          <span style="font-size: 22px;"><sup>1</sup>Alibaba Group</span>
+          <!-- <br> -->
+          &nbsp;&nbsp;&nbsp;
+          <span style="font-size: 22px"><sup>2</sup>Ant Group</span>
+        </p>
+        <br>
+        <img src="https://img.alicdn.com/imgextra/i2/O1CN01mhdz4l1YPrbh72u9R_!!6000000003052-0-tps-2202-734.jpg" class="teaser-gif" style="width:100%">
+        <br>
+        <p style="text-align: center; font-size: 18px;">
+          <em>
+            Composer exponentially expands the control space through composition, leading to an enormous number of ways to generate and manipulate images, i.e., <strong>making "the infinite use of finite means"</strong>.
+          </em>
+        </p>
+        <p style="text-align: center; font-size: 20px;">
+          <a href="https://arxiv.org/abs/2302.09778" target="_blank">[Paper]</a>
+          &nbsp;&nbsp;&nbsp;
+          <a href="./public/bibtex.txt" target="_blank">[BibTeX]</a>
+          &nbsp;&nbsp;&nbsp;
+          <a href="https://github.com/damo-vilab/composer" target="_blank">[Code]</a>
+        </p>
+      </div>
+
+      <div class="content">
+        <h2 style="text-align: center;">Abstract</h2>
+        <p>
+          Recent large-scale generative models learned on big data are capable of synthesizing incredible images yet suffer from limited controllability. This work offers a new generation paradigm that allows flexible control of the output image, such as spatial layout and palette, while maintaining the synthesis quality and model creativity. With <strong>compositionality</strong> as the core idea, we first decompose an image into representative factors, and then train a diffusion model with all these factors as the conditions to recompose the input. At the inference stage, the rich intermediate representations work as composable elements, leading to a huge design space (<em>i.e.</em>, exponentially proportional to the number of decomposed factors) for customizable content creation. It is noteworthy that our approach, which we call <strong>Composer</strong>, supports various levels of conditions, such as text description as the <em>global</em> information, depth map and sketch as the <em>local</em> guidance, color histogram for <em>low-level</em> details, <em>etc.</em> Besides improving controllability, we confirm that Composer serves as a general framework and facilitates a wide range of classical generative tasks without retraining. Code and models will be made available.
+        </p>
+      </div>
+
+      <!-- <div class="content">
+        <h2>Why Composer?</h2>
+        <h3>Flexibility</h3>
+        Composer serves as a general framework and facilitates a wide range of generative tasks without retraining, including but not limited to:
+        <em>
+          text-to-image generation, in/outpainting, style transfer, pose transfer, image translation, multi-modal conditional image generation, virtual try-on, interpolation and image variation from various directions, image manipulation by modifying intermediate elements such as sketches, depth or segmentation maps, colorization based on optional palettes, subject-driven generation,
+        </em>
+        and more.
+        <h3>Controllability</h3>
+        Composer allows us to manipulate an image by directly editing its elements.
+        <h3>Customization</h3>
+        Let's say you have a library of 100 images. Theoretically, with Composer, you have about <strong>100<sup>8</sup></strong> ways to combine these images to create new works.
+      </div> -->
+
+      <div class="content">
+        <h2>Composition Results</h2>
+        <p style="font-size: 18px">
+          Composition of <strong>text</strong> and <strong>depth</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i1/O1CN019fxRw11HmRfJSuKh6_!!6000000000800-0-tps-5016-2006.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          Composition of <strong>masked image</strong> and <strong>text</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i1/O1CN01o9D0Y724th6mECniG_!!6000000007449-0-tps-4959-1807.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          Composition of <strong>sketch, depth</strong> and <strong>embedding</strong> (1).
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i1/O1CN01F8zQ0M29P4hz91uoT_!!6000000008059-0-tps-4959-2006.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          Composition of <strong>sketch, depth</strong> and <strong>embedding</strong> (2).
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i4/O1CN014MfnA21IYXFhXAHCO_!!6000000000905-0-tps-4959-2006.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          Composition of <strong>text</strong> and <strong>palette</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i3/O1CN016W0lbC1qa5X6622oJ_!!6000000005511-0-tps-4979-1806.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          Composition of <strong>embedding</strong> and <strong>palette</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i4/O1CN01CwExvU1X3ajMEbOAl_!!6000000002868-0-tps-4959-1806.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          Composition of <strong>intensity</strong> and <strong>palette</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i4/O1CN01CELoLG1bB9jV0Bzzl_!!6000000003426-0-tps-4959-1806.jpg" style="width:100%;">
+      </div>
+
+      <div class="content">
+        <h2>Manipulation Results</h2>
+        <p style="font-size: 18px">
+          <strong>Image variations</strong> when fixing <strong>sketch, depth, palette</strong> and/or <strong>embedding</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i2/O1CN01BFZQA41wvy9KVB7ev_!!6000000006371-0-tps-4974-1536.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          <strong>Image interpolations</strong>  when fixing <strong>sketch, depth, segmentation map</strong> and/or <strong>palette</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i2/O1CN01PfGVFu1bhDSV2viYs_!!6000000003496-0-tps-4974-2008.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          <strong>Image reconfigurations</strong> (manipulating an image by directly modifying its elements).
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i3/O1CN01yffHDw1eNTEUJYrtJ_!!6000000003859-0-tps-4985-2486.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          <strong>Color interpolations</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i3/O1CN01BH9Vba1xs8S0RDErN_!!6000000006498-0-tps-4986-1347.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          <strong>Region-specific image editing</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i4/O1CN01EL6iJt1zfQh7HIXVh_!!6000000006741-0-tps-4983-2889.jpg" style="width:100%;"><br><br>
+      </div>
+
+      <div class="content">
+        <h2>Reformulation of Classical Tasks</h2>
+        <p style="font-size: 18px">
+          <strong>Image translation</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i1/O1CN01GwH37D1z9pMkSwEku_!!6000000006672-0-tps-4965-2958.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          <strong>Style transfer</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i1/O1CN016xbLEl24NdNp99wpf_!!6000000007379-0-tps-4980-2014.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          <strong>Pose transfer</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i4/O1CN01NATa5t1Xdm1HrKQES_!!6000000002947-0-tps-4959-718.jpg" style="width:100%;"><br><br>
+        <p style="font-size: 18px">
+          <strong>Virtual try-on</strong>.
+        </p>
+        <img class="summary-img" src="https://img.alicdn.com/imgextra/i3/O1CN01ZRGTZd1W63F1FmBou_!!6000000002738-0-tps-4960-720.jpg" style="width:100%;"><br><br>
+      </div>
+
+      <div class="content">
+        <h2>BibTex</h2>
+        <code> @article{lhhuang2023composer,<br>
+          &nbsp;&nbsp;title={Composer: Creative and Controllable Image Synthesis with Composable Conditions},<br>
+          &nbsp;&nbsp;author={Huang, Lianghua and Chen, Di and Liu, Yu and Yujun, Shen and Zhao, Deli and Jingren, Zhou},<br>
+          &nbsp;&nbsp;booktitle={arXiv preprint arxiv:2302.09778},<br>
+          &nbsp;&nbsp;year={2023}<br>
+          } </code>
+      </div>
+
+      <div class="content">
+        <h2 style="text-align: center;">We Are Hiring!</h2>
+        <p style="font-size: 18px">
+          If you're looking for an exciting challenge and the opportunity to work with 
+          <strong>cutting-edge technologies in AIGC and large-scale pretraining</strong>, then we are the place for you.
+          We are looking for talented, motivated and creative individuals to join our team.
+          If you are interested, please send your CV to
+          <a href="mailto:ly103369@alibaba-inc.com">Yu Liu</a>.
+        </p>
+      </div>
+
+      <br><br>
+      <footer class="footer">
+        <div class="container">
+          <div class="columns is-centered">
+            <!-- <div class="content"> -->
+              website template from <a href="https://dreambooth.github.io/">dreambooth</a>
+            <!-- </div> -->
+          </div>
+        </div>
+      </footer>
+      <br><br>
+  </body>
+</html>
