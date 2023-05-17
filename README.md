@@ -174,7 +174,7 @@ You may refer to the code [here](ldm/data/humansd.py) for loading the data.
 **Laion-Human**
 
 
-You may apply for access of Laion-Human [here](https://forms.gle/ANxDTjxcE2Ua45oU8). Noted that we only provide the pose annotations and mapping file, please download the images from [LAION-Aesthetics](https://laion.ai/blog/laion-aesthetics/). The LAION-Aesthetics store images in tar files, which is different from our data structure. So we recommend you extract the tar file through code:
+You may apply for access of Laion-Human [here](https://forms.gle/ANxDTjxcE2Ua45oU8). Noted that we have provide the pose annotations, images' .parquet file and mapping file, please download the images according to .parquet. The `key` in .parquet is the corresponding image index. For example, image with `key=338717` in 00033.parquet is corresponding to images/00000/000338717.jpg. If you download the LAION-Aesthetics in tar files, which is different from our data structure, we recommend you extract the tar file through code:
 
 ```python
 import tarfile
