@@ -1876,6 +1876,175 @@ class ImageEmbeddingConditionedLatentDiffusion(LatentDiffusion):
         return log
 
  
+
+class LatentPoseText2ImageDiffusion_HumanSD(LatentFinetuneDiffusion):
+    """
+    The implementation of HumanSD without heatmap-guided loss
+    the generation is conditioned on pose & text 
+    """
+    def __init__(self, 
+                 pose_config,
+                 pose_ckpt,
+                 estimate_thresh,
+                 pose_loss_weight,
+                 concat_keys=("pose_img",), 
+                 *args, 
+                 **kwargs):
+        # initialize class
+        # pose_config: the config of pose estimator used in mmpose
+        # pose_ckpt: the checkpoint ot pose estimator
+        # estimate_thresh: the threshold of pose estimation heatmap result
+        # pose_loss_weight: the weight of heatmap-guided loss
+        # concat_keys: the concated key, which is pose_img as processed in ldm/data/humansd.py
+        super().__init__(concat_keys=concat_keys, *args, **kwargs)
+        self.pose_stage_key = concat_keys[0]
+        
+        self.mmpose_config=pose_config
+        self.mmpose_ckpt=pose_ckpt
+        self.mmpose_model=init_pose_model(pose_config,pose_ckpt, device=self.device)
+        self.mmpose_model.eval()
+        self.estimate_thresh=estimate_thresh
+        self.pose_loss_weight=pose_loss_weight
+    
+    @torch.no_grad()
+    def get_input(self, batch, k, cond_key=None, bs=None, return_first_stage_outputs=False):
+        # note: restricted to non-trainable encoders currently
+        assert not self.cond_stage_trainable, 'trainable cond stages not yet supported for depth2img'
+        z, c, x, xrec, xc = super().get_input(batch, self.first_stage_key, return_first_stage_outputs=True,
+                                              force_c_encode=True, return_original_cond=True, bs=bs)
+
+        assert exists(self.concat_keys)
+        assert len(self.concat_keys) == 1
+        c_cat = list()
+        for ck in self.concat_keys:
+            cc = batch[ck]
+            if len(cc.shape) == 3:
+                cc = cc[..., None]
+            cc = rearrange(cc, 'b h w c -> b c h w')
+            cc = cc.to(memory_format=torch.contiguous_format).float()
+            if bs is not None:
+                cc = cc[:bs]
+                cc = cc.to(self.device)
+            cc = self.get_first_stage_encoding(self.encode_first_stage(cc))
+            
+            c_cat.append(cc)
+        c_cat = torch.cat(c_cat, dim=1)
+        all_conds = {"c_concat": [c_cat], "c_crossattn": [c]}
+        if return_first_stage_outputs:
+            return z, all_conds, x, xrec, xc
+        return z, all_conds
+
+    @torch.no_grad()
+    def log_images(self, *args, **kwargs):
+        log = super().log_images(*args, **kwargs)
+        pose_image = args[0][self.pose_stage_key]
+        pose_image = rearrange(pose_image, 'b h w c -> b c h w')
+        log["pose_image"] = pose_image
+        
+        log_add={}
+        
+        for key,image in log.items():
+            if key.startswith("samples"):
+                
+                image_draw = torch.nn.functional.interpolate(
+                    image,
+                    size=log["pose_image"].shape[2:],
+                    mode="bicubic",
+                    align_corners=False,
+                )
+                
+                draw_skeleton_mask=(torch.sum(log["pose_image"],1)<=(-1.+1e-3)).unsqueeze(1).repeat((1,3,1,1)).float()
+                posed_image=(1-draw_skeleton_mask)*log["pose_image"]+draw_skeleton_mask*image_draw
+                log_add[key.replace("samples","pose_samples")]=posed_image
+        
+        for key,item in log_add.items():
+            log[key]=item
+            
+        return log
+    
+    def p_losses(self, x_start, cond, t, noise=None):
+        noise = default(noise, lambda: torch.randn_like(x_start))
+        x_noisy = self.q_sample(x_start=x_start, t=t, noise=noise)
+        model_output = self.apply_model(x_noisy, t, cond)
+        
+        with torch.no_grad():
+            difference_image = torch.clamp((self.decode_first_stage(model_output-noise) + 1.0) / 2.0, min=0.0, max=1.0)
+            
+            difference_image_feature=self.mmpose_model.backbone(difference_image)
+            difference_image_head_outputs=self.mmpose_model.keypoint_head(difference_image_feature)
+            
+            difference_image_heatmaps, _ = split_ae_outputs(
+                difference_image_head_outputs, self.mmpose_model.test_cfg['num_joints'],
+                self.mmpose_model.test_cfg['with_heatmaps'], self.mmpose_model.test_cfg['with_ae'],
+                self.mmpose_model.test_cfg.get('select_output_index', range(len(difference_image_head_outputs))))
+            
+            scale_heatmaps_list = aggregate_stage_flip(
+                difference_image_heatmaps,
+                None,
+                index=-1,
+                project2image=self.mmpose_model.test_cfg['project2image'],
+                size_projected=1,
+                align_corners=self.mmpose_model.test_cfg.get('align_corners', True),
+                aggregate_stage='average',
+                aggregate_flip='average')
+                
+            aggregated_heatmaps = aggregate_scale(
+                scale_heatmaps_list,
+                align_corners=self.mmpose_model.test_cfg.get('align_corners', True),
+                aggregate_scale='average')
+
+            aggregated_heatmaps_zero = torch.zeros_like(aggregated_heatmaps)
+            aggregated_heatmaps_one = torch.ones_like(aggregated_heatmaps)
+            aggregated_heatmaps=torch.where(aggregated_heatmaps > self.estimate_thresh, 
+                                            aggregated_heatmaps_zero, 
+                                            aggregated_heatmaps_one)
+
+            aggregated_heatmaps_sum=torch.sum(aggregated_heatmaps,1,keepdim=True).repeat(1,3,1,1)
+            
+            pose_add_weight = torch.nn.functional.interpolate(
+                aggregated_heatmaps_sum,
+                size=difference_image.shape[2:],
+                mode="bicubic",
+                align_corners=False,
+            )
+            
+            back_to_embed_pose_add=self.encode_first_stage(pose_add_weight)
+            back_to_embed_pose_add_weight=self.get_first_stage_encoding(back_to_embed_pose_add)
+
+        loss_dict = {}
+        prefix = 'train' if self.training else 'val'
+
+        if self.parameterization == "x0":
+            target = x_start
+        elif self.parameterization == "eps":
+            target = noise
+        elif self.parameterization == "v":
+            target = self.get_v(x_start, noise, t)
+        else:
+            raise NotImplementedError()
+
+        loss_simple = torch.mul(self.get_loss(model_output, target, mean=False),(1+self.pose_loss_weight*back_to_embed_pose_add_weight)).mean([1, 2, 3])
+        loss_dict.update({f'{prefix}/loss_simple': loss_simple.mean()})
+
+        logvar_t = self.logvar[t].to(self.device)
+        loss = loss_simple / torch.exp(logvar_t) + logvar_t
+        # loss = loss_simple / torch.exp(self.logvar) + self.logvar
+        if self.learn_logvar:
+            loss_dict.update({f'{prefix}/loss_gamma': loss.mean()})
+            loss_dict.update({'logvar': self.logvar.data.mean()})
+
+        loss = self.l_simple_weight * loss.mean()
+
+        loss_vlb = self.get_loss(model_output, target, mean=False).mean(dim=(1, 2, 3))
+        loss_vlb = (self.lvlb_weights[t] * loss_vlb).mean()
+        loss_dict.update({f'{prefix}/loss_vlb': loss_vlb})
+        loss += (self.original_elbo_weight * loss_vlb)
+        loss_dict.update({f'{prefix}/loss': loss})
+
+
+        return loss, loss_dict
+       
+
 class LatentPoseText2ImageDiffusion_HumanSD_originalloss(LatentFinetuneDiffusion):
     """
     The implementation of HumanSD without heatmap-guided loss
@@ -1946,5 +2115,3 @@ class LatentPoseText2ImageDiffusion_HumanSD_originalloss(LatentFinetuneDiffusion
             
         return log
     
-    # We hide the p_loss function at present.
-    # Will be released after the paper is received.

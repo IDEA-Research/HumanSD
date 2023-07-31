@@ -2,7 +2,7 @@
 
 ---
 
-This repository contains the implementation of the following paper:
+This repository contains the implementation of the ICCV2023 paper:
 > **HumanSD: A Native Skeleton-Guided Diffusion Model for Human Image Generation** [[Project Page]](https://idea-research.github.io/HumanSD/) [[Paper]](https://arxiv.org/abs/2304.04269) [[Code]](https://github.com/IDEA-Research/HumanSD) [[Video]](https://drive.google.com/file/d/1Djc2uJS5fmKnKeBnL34FnAAm3YSH20Bb/view?usp=sharing) [[Data]](https://forms.gle/ANxDTjxcE2Ua45oU8) <br>
 > [Xuan Ju](https://juxuan.space/)<sup>∗12</sup>, [Ailing Zeng](https://ailingzeng.site/)<sup>∗1</sup>, [Chenchen Zhao](https://zcc31415926.github.io/)<sup>∗2</sup>, [Jianan Wang](https://github.com/wendyjnwang/)<sup>1</sup>, [Lei Zhang](https://www.leizhang.org/)<sup>1</sup>, [Qiang Xu](https://cure-lab.github.io/)<sup>2</sup><br>
 > <sup>∗</sup> Equal contribution <sup>1</sup>International Digital Economy Academy <sup>2</sup>The Chinese University of Hong Kong
@@ -34,6 +34,7 @@ HumanSD shows its superiorities in terms of (I) challenging poses, (II) accurate
     - [Model and Checkpoints](#model-and-checkpoints)
     - [Quick Demo](#quick-demo)
     - [Dataset](#dataset)
+    - [Training](#training)
   - [Quantitative Results](#quantitative-results)
   - [Qualitative Results](#qualitative-results)
     - [Natural Scene](#natural-scene)
@@ -51,10 +52,12 @@ HumanSD shows its superiorities in terms of (I) challenging poses, (II) accurate
 
 ## TODO
 
+News!! Our paper have been accepted by ICCV2023! Training code is released.
+
 - [x] Release inference code and pretrained models
 - [x] Release Gradio UI demo
 - [x] Public training data (LAION-Human)
-- [ ] Release training code (will be public after received)
+- [x] Release training code
 
 ## Model Overview
 
@@ -253,6 +256,21 @@ The file data structure should be like:
             |-- mapping_file_validation.json     
 ```
 
+## Training
+
+Note that the datasets and checkpoints should be downloaded and prepared before training.
+
+Run the commands below to start training:
+
+```
+python main.py --base configs/humansd/humansd-finetune.yaml -t --gpus 0,1 --name finetune_humansd
+```
+
+If you want to finetune without heat-map-guided diffusion loss for ablation, you can run the following commands:
+
+```
+python main.py --base configs/humansd/humansd-finetune-originalloss.yaml -t --gpus 0,1 --name finetune_humansd_original_loss
+```
 
 ## Quantitative Results
 

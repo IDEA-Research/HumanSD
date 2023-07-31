@@ -1,0 +1,172 @@
+model:
+  base_learning_rate: 5.0e-6
+  target: ldm.models.diffusion.ddpm.LatentPoseText2ImageDiffusion_HumanSD_originalloss
+  params:
+    linear_start: 0.00085
+    linear_end: 0.0120
+    num_timesteps_cond: 1
+    log_every_t: 50
+    timesteps: 1000
+    first_stage_key: "jpg"
+    cond_stage_key: "txt"
+    image_size: 64
+    channels: 4
+    cond_stage_trainable: false
+    conditioning_key: hybrid
+    scale_factor: 0.18215
+    monitor: val/loss_simple_ema
+    finetune_keys: ['model.diffusion_model.input_blocks.0.0.weight']
+    use_ema: False # true
+    ckpt_path: humansd_data/checkpoints/v2-1_512-ema-pruned.ckpt
+
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        use_checkpoint: True
+        use_fp16: True
+        image_size: 32 # unused
+        in_channels: 8
+        out_channels: 4
+        model_channels: 320
+        attention_resolutions: [ 4, 2, 1 ]
+        num_res_blocks: 2
+        channel_mult: [ 1, 2, 4, 4 ]
+        num_head_channels: 64 # need to fix for flash-attn
+        use_spatial_transformer: True
+        use_linear_in_transformer: True
+        transformer_depth: 1
+        context_dim: 1024
+        legacy: False
+
+    first_stage_config:
+      target: ldm.models.autoencoder.AutoencoderKL
+      params:
+        embed_dim: 4
+        monitor: val/rec_loss
+        ddconfig:
+          #attn_type: "vanilla-xformers"
+          double_z: true
+          z_channels: 4
+          resolution: 256
+          in_channels: 3
+          out_ch: 3
+          ch: 128
+          ch_mult:
+          - 1
+          - 2
+          - 4
+          - 4
+          num_res_blocks: 2
+          attn_resolutions: []
+          dropout: 0.0
+        lossconfig:
+          target: torch.nn.Identity
+
+    cond_stage_config:
+      target: ldm.modules.encoders.modules.FrozenOpenCLIPEmbedder
+      params:
+        freeze: True
+        layer: "penultimate"
+
+# added
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 4
+    num_workers: 1
+    wrap: False
+    train:
+      target: ldm.data.humansd.HumanSDPoseTrain
+      params:
+        image_size: 512
+        map_file: humansd_data/datasets/mapping_train.json
+        base_path: humansd_data/datasets
+        max_person_num: 10
+        keypoint_num: 17
+        keypoint_dim: 3
+        skeleton_width: 10
+        keypoint_thresh: 0.02
+        pose_skeleton: [
+                [0,0,1],
+                [1,0,2],
+                [2,1,3],
+                [3,2,4],
+                [4,3,5],
+                [5,4,6],
+                [6,5,7],
+                [7,6,8],
+                [8,7,9],
+                [9,8,10],
+                [10,5,11],
+                [11,6,12],
+                [12,11,13],
+                [13,12,14],
+                [14,13,15],
+                [15,14,16],
+            ]
+    validation:
+      target: ldm.data.humansd.HumanSDPoseValidation
+      params:
+        image_size: 512
+        map_file: humansd_data/datasets/HumanArt/mapping_validation.json
+        base_path: humansd_data/datasets/HumanArt
+        max_person_num: 10
+        keypoint_num: 17
+        keypoint_dim: 3
+        skeleton_width: 10
+        keypoint_thresh: 0.02
+        pose_skeleton: [
+                [0,0,1],
+                [1,0,2],
+                [2,1,3],
+                [3,2,4],
+                [4,3,5],
+                [5,4,6],
+                [6,5,7],
+                [7,6,8],
+                [8,7,9],
+                [9,8,10],
+                [10,5,11],
+                [11,6,12],
+                [12,11,13],
+                [13,12,14],
+                [14,13,15],
+                [15,14,16],
+            ]
+
+lightning:
+  find_unused_parameters: True
+  modelcheckpoint:
+    params:
+      every_n_train_steps: 1000
+
+  callbacks:
+    metrics_over_trainsteps_checkpoint:
+      params:
+        every_n_train_steps: 10000
+
+
+    image_logger:
+      target: main.ImageLogger
+      params:
+        # enable_autocast: False
+        disabled: False
+        batch_frequency: 200
+        max_images: 4
+        increase_log_steps: False
+        log_first_step: False
+        log_images_kwargs:
+          use_ema_scope: False
+          inpaint: False
+          plot_progressive_rows: False
+          plot_diffusion_rows: False
+          N: 4
+          unconditional_guidance_scale: 5.0
+          unconditional_guidance_label: ["longbody, lowres, bad anatomy, bad hands, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality"]
+          ddim_steps: 50 
+          ddim_eta: 0.0
+
+  trainer:
+    benchmark: True
+    num_sanity_val_steps: 0
+    accumulate_grad_batches: 1
