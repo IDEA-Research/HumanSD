@@ -378,7 +378,7 @@ ControlNet, T2I-Adapter, and HumanSD receive both text and pose conditions.
 @article{ju2023humansd,
   title={Human{SD}: A Native Skeleton-Guided Diffusion Model for Human Image Generation},
   author={Ju, Xuan and Zeng, Ailing and Zhao, Chenchen and Wang, Jianan and Zhang, Lei and Xu, Qiang},
-  journal={arXiv preprint arXiv:2304.04269},
+  journal={Proceedings of the IEEE International Conference on Computer Vision 2023},
   year={2023}
 }
 @inproceedings{ju2023human,
