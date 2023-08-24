@@ -28,13 +28,15 @@ HumanSD shows its superiorities in terms of (I) challenging poses, (II) accurate
 
 **Table of Contents**
 
+- [HumanSD](#humansd)
+  - [TODO](#todo)
   - [Model Overview](#model-overview)
   - [Getting Started](#getting-started)
     - [Environment Requirement](#environment-requirement)
     - [Model and Checkpoints](#model-and-checkpoints)
     - [Quick Demo](#quick-demo)
     - [Dataset](#dataset)
-    - [Training](#training)
+  - [Training](#training)
   - [Quantitative Results](#quantitative-results)
   - [Qualitative Results](#qualitative-results)
     - [Natural Scene](#natural-scene)
@@ -72,7 +74,7 @@ HumanSD has been implemented and tested on Pytorch 1.12.1 with python 3.9.
 
 Clone the repo:
 ```bash
-git clone --recursive git@github.com:IDEA-Research/HumanSD.git
+git clone git@github.com:IDEA-Research/HumanSD.git
 ```
 
 We recommend you first install `pytorch` following [official instructions](https://pytorch.org/get-started/previous-versions/). For example:
@@ -88,14 +90,9 @@ Then, you can install required packages thourgh:
 pip install -r requirements.txt
 ```
 
-You also need to install MMPose following [here](https://github.com/open-mmlab/mmpose). Noted that you only need to install MMPose as a python package.
+You also need to install MMPose following [here](https://github.com/open-mmlab/mmpose). Noted that you only need to install MMPose as a python package. PS: Because of the update of MMPose, we recommend you to install 0.29.0 version of MMPose.
 
 ### Model and Checkpoints
-
-
-
-
-**Checkpoints**
 
 Download necessary checkpoints of HumanSD, which can be found [here](https://drive.google.com/drive/folders/1NLQAlF7i0zjEpd-XY0EcVw9iXP5bB5BJ?usp=sharing). The data structure should be like:
 
@@ -110,26 +107,25 @@ Download necessary checkpoints of HumanSD, which can be found [here](https://dri
 Noted that v2-1_512-ema-pruned.ckpt should be download from [Stable Diffusion](https://github.com/Stability-AI/stablediffusion).
 
 
-**models**
-
-
-You also need to prepare the configs of MMPose models. You can directly download [mmpose/configs](https://github.com/open-mmlab/mmpose/tree/main/configs) and put it into humansd_data. Then the data structure will be:
-
-```
-|-- humansd_data
-    |-- models
-        |-- mmpose
-            |-- configs
-                |-- _base_
-                |-- animal
-                |-- ...
-```
-
-
 
 ### Quick Demo
 
-You can run demo through:
+You can run demo either through command line or gradio.
+
+You can run demo through command line with:
+
+```
+python scripts/pose2img.py --prompt "oil painting of girls dancing on the stage" --pose_file assets/pose/demo.npz
+```
+
+You can also run demo compared with ControlNet and T2I-Adapter:
+
+```
+python scripts/pose2img.py --prompt "oil painting of girls dancing on the stage" --pose_file assets/pose/demo.npz --controlnet --t2i
+```
+
+
+You can run gradio demo through:
 
 ```
 python scripts/gradio/pose2img.py
@@ -177,7 +173,63 @@ You may refer to the code [here](ldm/data/humansd.py) for loading the data.
 **Laion-Human**
 
 
-You may apply for access of Laion-Human [here](https://forms.gle/ANxDTjxcE2Ua45oU8). Noted that we have provide the pose annotations, images' .parquet file and mapping file, please download the images according to .parquet. The `key` in .parquet is the corresponding image index. For example, image with `key=338717` in 00033.parquet is corresponding to images/00000/000338717.jpg. If you download the LAION-Aesthetics in tar files, which is different from our data structure, we recommend you extract the tar file through code:
+You may apply for access of Laion-Human [here](https://forms.gle/ANxDTjxcE2Ua45oU8). Noted that we have provide the pose annotations, images' .parquet file and mapping file, please download the images according to .parquet. The `key` in .parquet is the corresponding image index. For example, image with `key=338717` in 00033.parquet is corresponding to images/00000/000338717.jpg. 
+
+After downloading the images and pose, you need to extract zip files and make it looks like:
+
+
+```
+|-- humansd_data
+    |-- datasets
+        |-- Laion 
+            |-- Aesthetics_Human
+                |-- images
+                    |-- 00000.parquet
+                    |-- 00001.parquet
+                    |-- ...
+                |-- pose
+                    |-- 00000
+                        |-- 000000000.npz
+                        |-- 000000001.npz
+                        |-- ...
+                    |-- 00001
+                    |-- ... 
+                |-- mapping_file_training.json        
+```
+
+Then, you can use `python utils/download_data.py` to download all images.
+
+
+Then, the file data structure should be like:
+
+```
+|-- humansd_data
+    |-- datasets
+        |-- Laion 
+            |-- Aesthetics_Human
+                |-- images
+                    |-- 00000.parquet
+                    |-- 00001.parquet
+                    |-- ...
+                    |-- 00000
+                        |-- 000000000.jpg
+                        |-- 000000001.jpg
+                        |-- ...
+                    |-- 00001
+                    |-- ...
+                |-- pose
+                    |-- 00000
+                        |-- 000000000.npz
+                        |-- 000000001.npz
+                        |-- ...
+                    |-- 00001
+                    |-- ... 
+                |-- mapping_file_training.json        
+```
+
+
+
+If you download the LAION-Aesthetics in tar files, which is different from our data structure, we recommend you extract the tar file through code:
 
 ```python
 import tarfile
@@ -195,30 +247,6 @@ with tarfile.open(present_tar_path, "r") as tar_file:
             if not os.path.exists(os.path.dirname(image_save_path)):
                 os.makedirs(os.path.dirname(image_save_path))
             cv2.imwrite(image_save_path,present_image_numpy)
-```
-
-The file data structure should be like:
-
-```
-|-- humansd_data
-    |-- datasets
-        |-- Laion 
-            |-- Aesthetics_Human
-                |-- images
-                    |-- 00000
-                        |-- 000000000.jpg
-                        |-- 000000001.jpg
-                        |-- ...
-                    |-- 00001
-                    |-- ...
-                |-- pose
-                    |-- 00000
-                        |-- 000000000.npz
-                        |-- 000000001.npz
-                        |-- ...
-                    |-- 00001
-                    |-- ... 
-                |-- mapping_file_training.json        
 ```
 
 **Human-Art**

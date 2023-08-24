@@ -1,9 +1,6 @@
-[submodule "comparison_models/T2I-Adapter"]
-	path = comparison_models/T2I-Adapter
-	url = git@github.com:TencentARC/T2I-Adapter.git
 [submodule "comparison_models/ControlNet"]
 	path = comparison_models/ControlNet
-	url = git@github.com:lllyasviel/ControlNet-v1-1-nightly.git
+	url = https://github.com/lllyasviel/ControlNet.git
 [submodule "comparison_models/T2IAdapter"]
 	path = comparison_models/T2IAdapter
-	url = git@github.com:TencentARC/T2I-Adapter.git
+	url = https://github.com/TencentARC/T2I-Adapter.git

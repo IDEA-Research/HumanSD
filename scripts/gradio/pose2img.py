@@ -506,11 +506,6 @@ def main(args):
         run_button.click(fn=predict, inputs=[
                         comparison_model, load_image_type, input_image, prompt, added_prompt, ddim_steps, detection_thresh, num_samples, scale, seed, eta, strength, negative_prompt], outputs=[gallery,controlnet_gallery,t2i_gallery])
 
-        
-        
-    
-    
-
     block.launch(share=True)
 
 if __name__=="__main__":
