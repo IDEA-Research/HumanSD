@@ -165,6 +165,6 @@ cython_debug/
 .vscode/
 
 # Data
-humansd_data
+humansd_data/checkpoints
+humansd_data/datasets
 logs
-sd_logs
