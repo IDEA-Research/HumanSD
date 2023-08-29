@@ -1,0 +1,15 @@
+metrics:
+  target: utils.metrics.metric_main.PoseTxt2ImgMetrics
+  params:
+    device: "cpu"
+    pose:
+      mmpose_config_file: 'humansd_data/models/mmpose/configs/body/2d_kpt_sview_rgb_img/associative_embedding/coco/higherhrnet_w48_coco_512x512_udp.py'
+      mmpose_checkpoint_file: 'humansd_data/checkpoints/higherhrnet_w48_coco_512x512_udp.pth'
+      tmp_res_dir: "outputs/metrics_logs"
+    quality:
+      refer_dataset_base_dir: "humansd_data/datasets"
+      refer_dataset_json_path: "humansd_data/datasets/HumanArt/annotations/validation_humanart.json"
+      fid_model_feature: 64
+      kid_subset_size: 1000
+    text:
+      clip_similarity_score_model_name: "openai/clip-vit-base-patch16"
