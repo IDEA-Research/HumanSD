@@ -306,6 +306,12 @@ python main.py --base configs/humansd/humansd-finetune-originalloss.yaml -t --gp
 <img src="assets/quantitative_results.png" width="97%">
 </div>
 
+Metrics can be calculated through:
+
+```
+python scripts/pose2img_metrics.py --outdir outputs/metrics --config utils/metrics/metrics.yaml --ckpt path_to_ckpt
+```
+
 ## Qualitative Results
 
 
