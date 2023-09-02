@@ -59,7 +59,7 @@ class PoseMetrics():
                                 "category":"None"
                                 })
             present_annotation_info=np.array(gt_pose[idx,...].detach().cpu())
-            for anno_i in range(3):
+            for anno_i in range(present_annotation_info.shape[0]):
                 present_annotation=present_annotation_info[anno_i,:,:]
                 keypoint_num=len(np.where(present_annotation[:,0]>0)[0])
                 if keypoint_num:
