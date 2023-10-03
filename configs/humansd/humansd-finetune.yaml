@@ -19,7 +19,7 @@ model:
     use_ema: False # true
     ckpt_path: humansd_data/checkpoints/v2-1_512-ema-pruned.ckpt
     pose_config: 'humansd_data/models/mmpose/configs/body/2d_kpt_sview_rgb_img/associative_embedding/coco/higherhrnet_w48_coco_512x512_udp.py'
-    pose_ckpt: 'humansd_data/checkpoints/higherhrnet_w48_coco_512x512_udp.pth'
+    pose_ckpt: 'humansd_data/checkpoints/higherhrnet_w48_humanart_512x512_udp.pth'
     estimate_thresh: 0.05
     pose_loss_weight: 0.1
 
